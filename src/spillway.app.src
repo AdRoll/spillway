@@ -1,0 +1,16 @@
+{application, spillway,
+ [{description, "A load shedding application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { spillway_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["MIT"]},
+  {links, []}
+ ]}.
