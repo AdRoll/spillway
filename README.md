@@ -47,14 +47,6 @@ end.
 Setup
 -------
 
-- Add the configuration environment variable 'counters' with a list of the
-names of different areas to control. You can also use:
-
-```
-spillway_conf:counters([running_requests]).
-
-```
-
 - Add the application to your rebar3 dependencies and start the application normally.
 Alternatively you can also attach the supervision tree directly to the main supervisor of your
 application.

@@ -60,7 +60,6 @@ end_per_suite(_Conf) ->
     ok.
 
 init_per_testcase(_Module, Conf) ->
-    spillway_conf:counters([?TABLE]),
     ok = application:start(spillway),
     Conf.
 
