@@ -45,13 +45,12 @@ start_link() ->
 %%====================================================================
 
 init([]) ->
-    Procs = [child(spillway_srv, worker, [spillway_conf:counters()])],
-    {ok, { {one_for_all, 0, 1}, Procs} }.
+    Procs = [child(spillway_srv, worker, [])],
+    {ok, { {one_for_all, 0, 1}, Procs}}.
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
 child(I, Type, Args) ->
-    {I, {I, start_link, Args}, permanent,
-        5000, Type, [I]}.
+    {I, {I, start_link, Args}, permanent, 5000, Type, [I]}.

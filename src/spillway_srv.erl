@@ -27,8 +27,7 @@
 
 %% API
 -export([
-    start_link/1,
-    setup/1,
+    start_link/0,
     enter/3,
     leave/2,
     cur/1,
@@ -49,8 +48,7 @@
 %%%===================================================================
 
 %% Attempt to increment the named counter, respecting the given limit.  If the counter was
-%% successfully incremented, return {true, NewValue}.  Otherwise, return false.  The
-%% counter must already exist.
+%% successfully incremented, return {true, NewValue}.  Otherwise, return false.
 -spec enter(term(), non_neg_integer(), non_neg_integer()) -> false | {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
     case cur(Name) of
@@ -65,7 +63,8 @@ enter(Name, Size, Limit) when Size > 0 ->
 
             [OldValue, NewValue] = ets:update_counter(?TID, Name,
                 [{#counter.value, 0},
-                    {#counter.value, Size, Limit, Limit}]),
+                    {#counter.value, Size, Limit, Limit}],
+                     #counter{name = Name}),
 
             Expected = OldValue + Size,
             case NewValue of
@@ -89,10 +88,15 @@ leave(Name, Size) ->
     ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}).
 
 
-%% Return the current counter value.  The counter must already exist.
+%% Return the current counter value.
 -spec cur(term()) -> non_neg_integer().
 cur(Name) ->
-    ets:lookup_element(?TID, Name, #counter.value).
+    try
+        ets:lookup_element(?TID, Name, #counter.value)
+    catch
+        error:badarg ->
+            0
+    end.
 
 %% For debug purposes, return the state of all counters
 -spec state() -> list(term()).
@@ -101,15 +105,13 @@ state()->
 
 %%%===================================================================
 %%% Internal functions
-%%%===========================================================
-%%% ========
+%%%===================================================================
 
-start_link(InitialCounters) ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [InitialCounters], []).
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-init([InitialCounters]) ->
+init(_Args) ->
     create_ets(),
-    [setup(Name) || Name <- InitialCounters],
     {ok, stateless}.
 
 handle_call(_Request, _From, State) ->
@@ -131,15 +133,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 
 %%%% Internal Functions
-
-
-%% Create the named counter with an initial value of 0.
--spec setup(term()) -> ok.
-setup(Name) ->
-    Counter = #counter{name = Name},
-    ets:insert(?TID, Counter),
-    Counter.
-
 create_ets() ->
     ets:new(?TID, [set, named_table, public,
         {keypos, #counter.name},
