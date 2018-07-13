@@ -63,5 +63,7 @@ Build
 
 1.x Changelog
 -------------
-1.0.0 July 2018
-    * Add initial implementation
+1.1 2018-07-13
+ * Remove the need to initialize counters
+1.0.0 2018-07-11
+ * Add initial implementation
