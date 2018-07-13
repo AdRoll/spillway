@@ -48,8 +48,7 @@
 %%%===================================================================
 
 %% Attempt to increment the named counter, respecting the given limit.  If the counter was
-%% successfully incremented, return {true, NewValue}.  Otherwise, return false.  The
-%% counter must already exist.
+%% successfully incremented, return {true, NewValue}.  Otherwise, return false.
 -spec enter(term(), non_neg_integer(), non_neg_integer()) -> false | {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
     case cur(Name) of
@@ -89,7 +88,7 @@ leave(Name, Size) ->
     ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}).
 
 
-%% Return the current counter value.  The counter must already exist.
+%% Return the current counter value.
 -spec cur(term()) -> non_neg_integer().
 cur(Name) ->
     try
@@ -134,7 +133,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 
 %%%% Internal Functions
-
 create_ets() ->
     ets:new(?TID, [set, named_table, public,
         {keypos, #counter.name},

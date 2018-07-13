@@ -34,9 +34,8 @@
 %%% External functions
 %%%===================================================================
 
-%% Attempt to increment the named counter, respecting the given limit.  If the counter was
-%% successfully incremented, return {true, NewValue}.  Otherwise, return false.  The
-%% counter must already exist.
+%% @doc Attempt to increment the named counter, respecting the given limit.  If the counter was
+%% successfully incremented, return {true, NewValue}.  Otherwise, return false.
 -spec enter(term(), non_neg_integer()) -> false | {true, non_neg_integer()}.
 enter(Name, Limit) ->
     enter(Name, 1, Limit).
@@ -45,7 +44,7 @@ enter(Name, Limit) ->
 enter(Name, Size, Limit) when Size > 0 ->
     spillway_srv:enter(Name, Size, Limit).
 
-%% Attempt to decrement the named counter, with a lower limit of 0.  Return the new value.
+%% @doc Attempt to decrement the named counter, with a lower limit of 0.  Return the new value.
 %% The counter must already exist.
 -spec leave(term()) -> non_neg_integer().
 leave(Name) ->
@@ -56,11 +55,11 @@ leave(Name, Size) ->
     spillway_srv:leave(Name, Size).
 
 
-%% Return the current counter value.  The counter must already exist.
+%% @doc Return the current counter value. It will return 0 if it does not exist.
 -spec cur(term()) -> non_neg_integer().
 cur(Name) ->
     spillway_srv:cur(Name).
 
-%% For debug purposes. Returns the state of all counters.
+%% @doc For debug purposes. Returns the state of all counters.
 state() ->
     spillway_srv:state().
