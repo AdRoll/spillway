@@ -1,8 +1,11 @@
 {application, spillway,
  [{description, "A load shedding application"},
-  {vsn, "0.1.0"},
+  {vsn, "1.2.0"},
   {registered, []},
+  {maintainers, ["AdRoll"]},
+  {links, [{"Github", "https://github.com/AdRoll/spillway"}]},
   {mod, { spillway_app, []}},
+  {build_tools, ["rebar3"]},
   {applications,
    [kernel,
     stdlib
