@@ -107,7 +107,7 @@ complex(_) ->
                                     ok
                             end
                     end
-                              end),
+                end),
             Process
         end
         || Proc <- lists:seq(1, NProcs)],
@@ -150,8 +150,9 @@ wait_for_down(ProcessesExited) ->
 
 
 signal() ->
-    spawn(fun() ->
-        receive
-            go -> ok
-        end
-          end).
+    spawn(
+        fun() ->
+            receive
+                go -> ok
+            end
+        end).

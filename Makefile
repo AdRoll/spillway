@@ -1,30 +1,37 @@
 REBAR = rebar3
 
-all: compile  xref
+all: compile
+
+deps:
+	@$(REBAR) unlock
+	@$(REBAR) upgrade
 
 compile:
 	@$(REBAR) compile
 
-test: ct
+edoc:
+	@$(REBAR) doc
+
+test: compile lint dialyzer xref ct cover
 
 ct:
-	@rm -rf .ct
-	@mkdir -p .ct
-	@$(REBAR) compile
 ifdef SUITE
 	@$(REBAR) ct --suite=$(SUITE)
 else
 	@$(REBAR) ct
 endif
 
-
 clean:
-	rm -rf _build*
-	@$(REBAR) clean
+	rm -rf _build
 
 dialyzer:
-	@$(REBAR) dialyze
+	@$(REBAR) dialyzer
 
 xref:
-	-@$(REBAR) xref skip_deps=true
+	@$(REBAR) xref
 
+cover:
+	@$(REBAR) cover
+
+lint:
+	@$(REBAR) lint
