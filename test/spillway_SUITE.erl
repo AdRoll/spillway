@@ -150,8 +150,9 @@ wait_for_down(ProcessesExited) ->
 
 
 signal() ->
-    spawn(fun() ->
-        receive
-            go -> ok
-        end
-          end).
+    spawn(
+        fun() ->
+            receive
+                go -> ok
+            end
+        end).
