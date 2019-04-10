@@ -107,7 +107,7 @@ complex(_) ->
                                     ok
                             end
                     end
-                              end),
+                end),
             Process
         end
         || Proc <- lists:seq(1, NProcs)],
