@@ -26,18 +26,13 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("common_test/include/ct.hrl").
 
-
 -export([all/0,
-    init_per_suite/1,
-    end_per_suite/1,
-    suite/0,
-    init_per_testcase/2,
-    end_per_testcase/2]).
-
--export([
-    complex/1,
-    simple/1
-]).
+         init_per_suite/1,
+         end_per_suite/1,
+         suite/0,
+         init_per_testcase/2,
+         end_per_testcase/2]).
+-export([complex/1, simple/1]).
 
 -define(TABLE, test_counter).
 
@@ -45,10 +40,8 @@
 %%% common_test callbacks
 %%%=============================================================================
 
-all() -> [
-    simple,
-    complex
-].
+all() ->
+    [simple, complex].
 
 suite() ->
     [{timetrap, {seconds, 15}}].
@@ -87,30 +80,41 @@ complex(_) ->
     Parent = self(),
     SignalGo = signal(),
     SignalStop = signal(),
-    Processes = [
-        begin
-            {Process, _Ref} =
-                spawn_monitor(fun() ->
-                    monitor(process, SignalGo),
-                    monitor(process, SignalStop),
-                    receive
-                        {'DOWN', _, process, SignalGo, _} ->
-                            case spillway:enter(?TABLE, Proc, Limit) of
-                                {true, N} ->
-                                    send_parent(Parent, {entered, self(), N}),
-                                    receive
-                                        {'DOWN', _, process, SignalStop, _} ->
-                                                spillway:leave(?TABLE, Proc)
-                                    end;
-                                false ->
-                                    send_parent(Parent, {not_entered, self()}),
-                                    ok
-                            end
-                    end
-                end),
-            Process
-        end
-        || Proc <- lists:seq(1, NProcs)],
+    Processes = [begin
+                   {Process, _Ref} = spawn_monitor(fun () ->
+                                                           monitor(process, SignalGo),
+                                                           monitor(process, SignalStop),
+                                                           receive
+                                                             {'DOWN', _, process, SignalGo, _} ->
+                                                                 case spillway:enter(?TABLE,
+                                                                                     Proc,
+                                                                                     Limit)
+                                                                     of
+                                                                   {true, N} ->
+                                                                       send_parent(Parent,
+                                                                                   {entered,
+                                                                                    self(),
+                                                                                    N}),
+                                                                       receive
+                                                                         {'DOWN',
+                                                                          _,
+                                                                          process,
+                                                                          SignalStop,
+                                                                          _} ->
+                                                                             spillway:leave(?TABLE,
+                                                                                            Proc)
+                                                                       end;
+                                                                   false ->
+                                                                       send_parent(Parent,
+                                                                                   {not_entered,
+                                                                                    self()}),
+                                                                       ok
+                                                                 end
+                                                           end
+                                                   end),
+                   Process
+                 end
+                 || Proc <- lists:seq(1, NProcs)],
     SignalGo ! go,
 
     %% Collect enter msg
@@ -132,27 +136,27 @@ collect_values([], Max) ->
     Max;
 collect_values(ProcessesSignal, Cur) ->
     receive
-        {not_entered, Pid} ->
-            collect_values(ProcessesSignal -- [Pid], Cur);
-        {entered, Pid, M} when M > Cur ->
-            collect_values(ProcessesSignal -- [Pid], M);
-        {entered, Pid, _} ->
-            collect_values(ProcessesSignal -- [Pid], Cur)
+      {not_entered, Pid} ->
+          collect_values(ProcessesSignal -- [Pid], Cur);
+      {entered, Pid, M} when M > Cur ->
+          collect_values(ProcessesSignal -- [Pid], M);
+      {entered, Pid, _} ->
+          collect_values(ProcessesSignal -- [Pid], Cur)
     end.
 
 wait_for_down([]) ->
     ok;
 wait_for_down(ProcessesExited) ->
     receive
-        {'DOWN', _, process, Pid, _} ->
-            wait_for_down(ProcessesExited -- [Pid])
+      {'DOWN', _, process, Pid, _} ->
+          wait_for_down(ProcessesExited -- [Pid])
     end.
 
-
 signal() ->
-    spawn(
-        fun() ->
-            receive
-                go -> ok
-            end
-        end).
+    spawn(fun () ->
+                  receive
+                    go ->
+                        ok
+                  end
+          end).
+
