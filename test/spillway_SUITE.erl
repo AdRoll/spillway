@@ -74,47 +74,34 @@ simple(_) ->
     ?assertEqual(0, spillway:leave(?TABLE)),
     ok.
 
+spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent) ->
+    spawn_monitor(fun () ->
+                          monitor(process, SignalGo),
+                          monitor(process, SignalStop),
+                          receive
+                            {'DOWN', _, process, SignalGo, _} ->
+                                case spillway:enter(?TABLE, ProcN, Limit) of
+                                  {true, N} ->
+                                      send_parent(Parent, {entered, self(), N}),
+                                      receive
+                                        {'DOWN', _, process, SignalStop, _} ->
+                                            spillway:leave(?TABLE, ProcN)
+                                      end;
+                                  false ->
+                                      send_parent(Parent, {not_entered, self()}),
+                                      ok
+                                end
+                          end
+                  end).
+
 complex(_) ->
     NProcs = 2000,
     Limit = 140000,
     Parent = self(),
     SignalGo = signal(),
     SignalStop = signal(),
-    Processes = [begin
-                   {Process, _Ref} = spawn_monitor(fun () ->
-                                                           monitor(process, SignalGo),
-                                                           monitor(process, SignalStop),
-                                                           receive
-                                                             {'DOWN', _, process, SignalGo, _} ->
-                                                                 case spillway:enter(?TABLE,
-                                                                                     Proc,
-                                                                                     Limit)
-                                                                     of
-                                                                   {true, N} ->
-                                                                       send_parent(Parent,
-                                                                                   {entered,
-                                                                                    self(),
-                                                                                    N}),
-                                                                       receive
-                                                                         {'DOWN',
-                                                                          _,
-                                                                          process,
-                                                                          SignalStop,
-                                                                          _} ->
-                                                                             spillway:leave(?TABLE,
-                                                                                            Proc)
-                                                                       end;
-                                                                   false ->
-                                                                       send_parent(Parent,
-                                                                                   {not_entered,
-                                                                                    self()}),
-                                                                       ok
-                                                                 end
-                                                           end
-                                                   end),
-                   Process
-                 end
-                 || Proc <- lists:seq(1, NProcs)],
+    Processes = [element(1, spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent))
+                 || ProcN <- lists:seq(1, NProcs)],
     SignalGo ! go,
 
     %% Collect enter msg
