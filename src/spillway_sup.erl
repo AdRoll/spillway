@@ -27,7 +27,6 @@
 
 %% API
 -export([start_link/0]).
-
 %% Supervisor callbacks
 -export([init/1]).
 
@@ -46,7 +45,7 @@ start_link() ->
 
 init([]) ->
     Procs = [child(spillway_srv, worker, [])],
-    {ok, { {one_for_all, 0, 1}, Procs}}.
+    {ok, {{one_for_all, 0, 1}, Procs}}.
 
 %%====================================================================
 %% Internal functions
@@ -54,3 +53,4 @@ init([]) ->
 
 child(I, Type, Args) ->
     {I, {I, start_link, Args}, permanent, 5000, Type, [I]}.
+
