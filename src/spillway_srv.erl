@@ -26,22 +26,19 @@
 -behaviour(gen_server).
 
 %% API
--export([
-    start_link/0,
-    enter/3,
-    leave/2,
-    cur/1,
-    state/0]).
-
+-export([start_link/0, enter/3, leave/2, cur/1, state/0]).
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-    terminate/2, code_change/3]).
+-export([init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_info/2,
+         terminate/2,
+         code_change/3]).
 
 -define(SERVER, ?MODULE).
 -define(TID, spillway).
 
--record(counter, {name,
-    value = 0 :: non_neg_integer()}).
+-record(counter, {name, value = 0 :: non_neg_integer()}).
 
 %%%===================================================================
 %%% External functions
@@ -49,37 +46,36 @@
 
 %% Attempt to increment the named counter, respecting the given limit.  If the counter was
 %% successfully incremented, return {true, NewValue}.  Otherwise, return false.
--spec enter(term(), non_neg_integer(), non_neg_integer()) -> false | {true, non_neg_integer()}.
+-spec enter(term(), non_neg_integer(), non_neg_integer()) -> false |
+                                                             {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
     case cur(Name) of
-        Value when Value + Size > Limit ->
-            false;
-        _ ->
-            %% note: update_counter accepts a list of operations.  we need to know whether
-            %% we were the process to successfully increment a limit-reaching value, so we
-            %% use an initial non-incrementing operation to read the existing value.  if
-            %% the result is [X, X+Size], we successfully incremented the counter.  if we
-            %% failed, the result will be [X, X].
-
-            [OldValue, NewValue] = ets:update_counter(?TID, Name,
-                [{#counter.value, 0},
-                    {#counter.value, Size, Limit, Limit}],
-                     #counter{name = Name}),
-
-            Expected = OldValue + Size,
-            case NewValue of
-                OldValue ->
-                    %% We did not increment
-                    false;
-                Expected ->
-                    %% We incremented
-                    {true, Expected};
-                Limit ->
-                    %% We incremented over the limit so limit is set
-                    {true, Limit}
-            end
+      Value when Value + Size > Limit ->
+          false;
+      _ ->
+          %% note: update_counter accepts a list of operations.  we need to know whether
+          %% we were the process to successfully increment a limit-reaching value, so we
+          %% use an initial non-incrementing operation to read the existing value.  if
+          %% the result is [X, X+Size], we successfully incremented the counter.  if we
+          %% failed, the result will be [X, X].
+          [OldValue, NewValue] = ets:update_counter(?TID,
+                                                    Name,
+                                                    [{#counter.value, 0},
+                                                     {#counter.value, Size, Limit, Limit}],
+                                                    #counter{name = Name}),
+          Expected = OldValue + Size,
+          case NewValue of
+            OldValue ->
+                %% We did not increment
+                false;
+            Expected ->
+                %% We incremented
+                {true, Expected};
+            Limit ->
+                %% We incremented over the limit so limit is set
+                {true, Limit}
+          end
     end.
-
 
 %% Attempt to decrement the named counter, with a lower limit of 0.  Return the new value.
 %% The counter must already exist.
@@ -87,20 +83,19 @@ enter(Name, Size, Limit) when Size > 0 ->
 leave(Name, Size) ->
     ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}).
 
-
 %% Return the current counter value.
 -spec cur(term()) -> non_neg_integer().
 cur(Name) ->
     try
-        ets:lookup_element(?TID, Name, #counter.value)
+      ets:lookup_element(?TID, Name, #counter.value)
     catch
-        error:badarg ->
-            0
+      error:badarg ->
+          0
     end.
 
 %% For debug purposes, return the state of all counters
--spec state() -> list(term()).
-state()->
+-spec state() -> [term()].
+state() ->
     ets:tab2list(?TID).
 
 %%%===================================================================
@@ -131,10 +126,13 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-
 %%%% Internal Functions
 create_ets() ->
-    ets:new(?TID, [set, named_table, public,
-        {keypos, #counter.name},
-        {read_concurrency, true},
-        {write_concurrency, true}]).
+    ets:new(?TID,
+            [set,
+             named_table,
+             public,
+             {keypos, #counter.name},
+             {read_concurrency, true},
+             {write_concurrency, true}]).
+

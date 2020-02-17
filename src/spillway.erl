@@ -23,12 +23,7 @@
 %%-------------------------------------------------------------------
 -module(spillway).
 
--export([enter/2,
-         enter/3,
-         leave/1,
-         leave/2,
-         cur/1,
-         state/0]).
+-export([enter/2, enter/3, leave/1, leave/2, cur/1, state/0]).
 
 %%%===================================================================
 %%% External functions
@@ -40,7 +35,8 @@
 enter(Name, Limit) ->
     enter(Name, 1, Limit).
 
--spec enter(term(), non_neg_integer(), non_neg_integer()) -> false | {true, non_neg_integer()}.
+-spec enter(term(), non_neg_integer(), non_neg_integer()) -> false |
+                                                             {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
     spillway_srv:enter(Name, Size, Limit).
 
@@ -54,7 +50,6 @@ leave(Name) ->
 leave(Name, Size) ->
     spillway_srv:leave(Name, Size).
 
-
 %% @doc Return the current counter value. It will return 0 if it does not exist.
 -spec cur(term()) -> non_neg_integer().
 cur(Name) ->
@@ -63,3 +58,4 @@ cur(Name) ->
 %% @doc For debug purposes. Returns the state of all counters.
 state() ->
     spillway_srv:state().
+
