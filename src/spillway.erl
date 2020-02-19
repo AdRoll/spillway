@@ -23,8 +23,7 @@
 %%-------------------------------------------------------------------
 -module(spillway).
 
--export([enter/2, enter/3, 
-    leave/1, leave/2, cur/1, state/0]).
+-export([enter/2, enter/3, leave/1, leave/2, cur/1, state/0]).
 
 %%%===================================================================
 %%% External functions
