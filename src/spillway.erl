@@ -58,4 +58,3 @@ cur(Name) ->
 %% @doc For debug purposes. Returns the state of all counters.
 state() ->
     spillway_srv:state().
-

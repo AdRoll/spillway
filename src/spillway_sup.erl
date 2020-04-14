@@ -53,4 +53,3 @@ init([]) ->
 
 child(I, Type, Args) ->
     {I, {I, start_link, Args}, permanent, 5000, Type, [I]}.
-
