@@ -135,4 +135,3 @@ create_ets() ->
              {keypos, #counter.name},
              {read_concurrency, true},
              {write_concurrency, true}]).
-

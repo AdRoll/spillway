@@ -146,4 +146,3 @@ signal() ->
                         ok
                   end
           end).
-
