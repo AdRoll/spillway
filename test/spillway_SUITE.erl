@@ -26,11 +26,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("common_test/include/ct.hrl").
 
--export([all/0,
-         init_per_suite/1,
-         end_per_suite/1,
-         suite/0,
-         init_per_testcase/2,
+-export([all/0, init_per_suite/1, end_per_suite/1, suite/0, init_per_testcase/2,
          end_per_testcase/2]).
 -export([complex/1, simple/1]).
 
@@ -79,18 +75,18 @@ spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent) ->
                           monitor(process, SignalGo),
                           monitor(process, SignalStop),
                           receive
-                            {'DOWN', _, process, SignalGo, _} ->
-                                case spillway:enter(?TABLE, ProcN, Limit) of
-                                  {true, N} ->
-                                      send_parent(Parent, {entered, self(), N}),
-                                      receive
-                                        {'DOWN', _, process, SignalStop, _} ->
-                                            spillway:leave(?TABLE, ProcN)
-                                      end;
-                                  false ->
-                                      send_parent(Parent, {not_entered, self()}),
-                                      ok
-                                end
+                              {'DOWN', _, process, SignalGo, _} ->
+                                  case spillway:enter(?TABLE, ProcN, Limit) of
+                                      {true, N} ->
+                                          send_parent(Parent, {entered, self(), N}),
+                                          receive
+                                              {'DOWN', _, process, SignalStop, _} ->
+                                                  spillway:leave(?TABLE, ProcN)
+                                          end;
+                                      false ->
+                                          send_parent(Parent, {not_entered, self()}),
+                                          ok
+                                  end
                           end
                   end).
 
@@ -100,8 +96,9 @@ complex(_) ->
     Parent = self(),
     SignalGo = signal(),
     SignalStop = signal(),
-    Processes = [element(1, spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent))
-                 || ProcN <- lists:seq(1, NProcs)],
+    Processes =
+        [element(1, spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent))
+         || ProcN <- lists:seq(1, NProcs)],
     SignalGo ! go,
 
     %% Collect enter msg
@@ -123,26 +120,26 @@ collect_values([], Max) ->
     Max;
 collect_values(ProcessesSignal, Cur) ->
     receive
-      {not_entered, Pid} ->
-          collect_values(ProcessesSignal -- [Pid], Cur);
-      {entered, Pid, M} when M > Cur ->
-          collect_values(ProcessesSignal -- [Pid], M);
-      {entered, Pid, _} ->
-          collect_values(ProcessesSignal -- [Pid], Cur)
+        {not_entered, Pid} ->
+            collect_values(ProcessesSignal -- [Pid], Cur);
+        {entered, Pid, M} when M > Cur ->
+            collect_values(ProcessesSignal -- [Pid], M);
+        {entered, Pid, _} ->
+            collect_values(ProcessesSignal -- [Pid], Cur)
     end.
 
 wait_for_down([]) ->
     ok;
 wait_for_down(ProcessesExited) ->
     receive
-      {'DOWN', _, process, Pid, _} ->
-          wait_for_down(ProcessesExited -- [Pid])
+        {'DOWN', _, process, Pid, _} ->
+            wait_for_down(ProcessesExited -- [Pid])
     end.
 
 signal() ->
     spawn(fun () ->
                   receive
-                    go ->
-                        ok
+                      go ->
+                          ok
                   end
           end).
