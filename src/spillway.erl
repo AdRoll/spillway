@@ -35,8 +35,8 @@
 enter(Name, Limit) ->
     enter(Name, 1, Limit).
 
--spec enter(term(), non_neg_integer(), non_neg_integer()) -> false |
-                                                             {true, non_neg_integer()}.
+-spec enter(term(), non_neg_integer(), non_neg_integer()) ->
+               false | {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
     spillway_srv:enter(Name, Size, Limit).
 
