@@ -71,23 +71,23 @@ simple(_) ->
     ok.
 
 spawn_proc(ProcN, Limit, SignalGo, SignalStop, Parent) ->
-    spawn_monitor(fun () ->
-                          monitor(process, SignalGo),
-                          monitor(process, SignalStop),
-                          receive
-                              {'DOWN', _, process, SignalGo, _} ->
-                                  case spillway:enter(?TABLE, ProcN, Limit) of
-                                      {true, N} ->
-                                          send_parent(Parent, {entered, self(), N}),
-                                          receive
-                                              {'DOWN', _, process, SignalStop, _} ->
-                                                  spillway:leave(?TABLE, ProcN)
-                                          end;
-                                      false ->
-                                          send_parent(Parent, {not_entered, self()}),
-                                          ok
-                                  end
-                          end
+    spawn_monitor(fun() ->
+                     monitor(process, SignalGo),
+                     monitor(process, SignalStop),
+                     receive
+                         {'DOWN', _, process, SignalGo, _} ->
+                             case spillway:enter(?TABLE, ProcN, Limit) of
+                                 {true, N} ->
+                                     send_parent(Parent, {entered, self(), N}),
+                                     receive
+                                         {'DOWN', _, process, SignalStop, _} ->
+                                             spillway:leave(?TABLE, ProcN)
+                                     end;
+                                 false ->
+                                     send_parent(Parent, {not_entered, self()}),
+                                     ok
+                             end
+                     end
                   end).
 
 complex(_) ->
@@ -137,9 +137,4 @@ wait_for_down(ProcessesExited) ->
     end.
 
 signal() ->
-    spawn(fun () ->
-                  receive
-                      go ->
-                          ok
-                  end
-          end).
+    spawn(fun() -> receive go -> ok end end).
