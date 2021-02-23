@@ -1,19 +1,15 @@
-{application, spillway,
+{application,
+ spillway,
  [{description, "A load shedding application"},
   {vsn, "1.2.2"},
   {registered, []},
   {maintainers, ["AdRoll"]},
   {links, [{"Github", "https://github.com/AdRoll/spillway"}]},
-  {mod, { spillway_app, []}},
+  {mod, {spillway_app, []}},
   {build_tools, ["rebar3"]},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
+  {applications, [kernel, stdlib]},
+  {env, []},
   {modules, []},
-
   {maintainers, []},
   {licenses, ["MIT"]},
-  {links, []}
- ]}.
+  {links, []}]}.
