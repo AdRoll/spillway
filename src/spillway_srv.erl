@@ -43,32 +43,27 @@
 -spec enter(term(), non_neg_integer(), non_neg_integer()) ->
                false | {true, non_neg_integer()}.
 enter(Name, Size, Limit) when Size > 0 ->
-    case cur(Name) of
-        Value when Value + Size > Limit ->
+    %% note: update_counter accepts a list of operations.  we need to know whether
+    %% we were the process to successfully increment a limit-reaching value, so we
+    %% use an initial non-incrementing operation to read the existing value.  if
+    %% the result is [X, X+Size], we successfully incremented the counter.  if we
+    %% failed, the result will be [X, X].
+    [OldValue, NewValue] =
+        ets:update_counter(?TID,
+                           Name,
+                           [{#counter.value, 0}, {#counter.value, Size, Limit, Limit}],
+                           #counter{name = Name}),
+    Expected = OldValue + Size,
+    case NewValue of
+        OldValue ->
+            %% We did not increment
             false;
-        _ ->
-            %% note: update_counter accepts a list of operations.  we need to know whether
-            %% we were the process to successfully increment a limit-reaching value, so we
-            %% use an initial non-incrementing operation to read the existing value.  if
-            %% the result is [X, X+Size], we successfully incremented the counter.  if we
-            %% failed, the result will be [X, X].
-            [OldValue, NewValue] =
-                ets:update_counter(?TID,
-                                   Name,
-                                   [{#counter.value, 0}, {#counter.value, Size, Limit, Limit}],
-                                   #counter{name = Name}),
-            Expected = OldValue + Size,
-            case NewValue of
-                OldValue ->
-                    %% We did not increment
-                    false;
-                Expected ->
-                    %% We incremented
-                    {true, Expected};
-                Limit ->
-                    %% We incremented over the limit so limit is set
-                    {true, Limit}
-            end
+        Expected ->
+            %% We incremented
+            {true, Expected};
+        Limit ->
+            %% We incremented over the limit so limit is set
+            {true, Limit}
     end.
 
 %% Attempt to decrement the named counter, with a lower limit of 0.  Return the new value.
