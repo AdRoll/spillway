@@ -1,7 +1,7 @@
 {application,
  spillway,
  [{description, "A load shedding application"},
-  {vsn, "1.2.3"},
+  {vsn, "1.2.4"},
   {registered, []},
   {maintainers, ["AdRoll"]},
   {links, [{"Github", "https://github.com/AdRoll/spillway"}]},
