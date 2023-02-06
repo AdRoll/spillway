@@ -95,7 +95,7 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Args) ->
-    create_ets(),
+    _ = create_ets(),
     {ok, stateless}.
 
 handle_call(_Request, _From, State) ->
