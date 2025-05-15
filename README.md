@@ -17,16 +17,16 @@ Example of use
 ----------------
 
 A process about to execute a named section of code whose maximum parallelism
-should be limited will call spillway:enter/2/3 with the name, the weight, and limit.
+should be limited will call `spillway:enter/2/3` with the name, the weight, and limit.
 
-If the return value is the 2-tuple {true, TotalWeight}, the process may enter the section of code
+If the return value is the 2-tuple `{true, TotalWeight}`, the process may enter the section of code
  (there now being TotalWeight in use concurrently-executing accesses), and otherwise not.
 
-If the process entered the section of code, it should call spillway:leave/2 with the name and weight
+If the process entered the section of code, it should call `spillway:leave/2` with the name and weight
 after completion.
 
 No special arrangement is made to handle process exits.  If a process dies without
-calling spillway:leave/1, the counter will be inaccurate.  This is intentional,
+calling `spillway:leave/1`, the counter will be inaccurate.  This is intentional,
 and callers should make arrangements to mitigate this occurrence.
 
 ```
@@ -58,8 +58,11 @@ Spillway is implemented based on ETS-based bounded named counters.
 
 Build
 -----
-  $ make
-  $ make ct
+
+```shell
+  make
+  make ct
+```
 
 1.x Changelog
 -------------
