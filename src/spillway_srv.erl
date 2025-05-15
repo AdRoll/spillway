@@ -70,7 +70,21 @@ enter(Name, Size, Limit) when Size > 0 ->
 %% The counter must already exist.
 -spec leave(term(), non_neg_integer()) -> non_neg_integer().
 leave(Name, Size) ->
-    ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}).
+    Counter =
+        case ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}) of
+            [] ->
+                0;
+            [Result | _] ->
+                Result;
+            Result ->
+                Result
+        end,
+    case Counter >= 0 of
+        true ->
+            Counter;
+        false ->
+            0
+    end.
 
 %% Return the current counter value.
 -spec cur(term()) -> non_neg_integer().
