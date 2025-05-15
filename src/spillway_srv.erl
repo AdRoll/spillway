@@ -34,6 +34,8 @@
 
 -record(counter, {name, value = 0 :: non_neg_integer()}).
 
+-elvis([{elvis_style, dont_repeat_yourself, disable}]).
+
 %%%===================================================================
 %%% External functions
 %%%===================================================================
@@ -68,9 +70,26 @@ enter(Name, Size, Limit) when Size > 0 ->
 
 %% Attempt to decrement the named counter, with a lower limit of 0.  Return the new value.
 %% The counter must already exist.
+-if(?OTP_RELEASE =< 25).
+
 -spec leave(term(), non_neg_integer()) -> non_neg_integer().
 leave(Name, Size) ->
     ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}).
+
+- else .
+
+-spec leave(term(), non_neg_integer()) -> non_neg_integer().
+leave(Name, Size) ->
+    case ets:update_counter(?TID, Name, {#counter.value, -Size, 0, 0}) of
+        [] ->
+            0;
+        [Result | _] ->
+            Result;
+        Result ->
+            Result
+    end.
+
+-endif.
 
 %% Return the current counter value.
 -spec cur(term()) -> non_neg_integer().
